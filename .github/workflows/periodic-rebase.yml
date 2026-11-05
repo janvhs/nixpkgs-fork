@@ -99,7 +99,7 @@ jobs:
           git config remote.upstream.partialclonefilter blob:none
 
           printf 'Fetching revision "%s" from upstream\n' "${INPUTS_REVISION}"
-          git fetch --filter=blob:none upstream "${INPUTS_REVISION}"
+          git fetch --no-tags --filter=blob:none upstream "${INPUTS_REVISION}"
 
           if git merge-base --is-ancestor "${INPUTS_REVISION}" HEAD; then
             printf 'The branch "%s" already contains "%s" in its history. Not rebasing\n' "${INPUTS_TARGET}" "${INPUTS_REVISION}"
