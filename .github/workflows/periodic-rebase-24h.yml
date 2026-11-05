@@ -1,0 +1,35 @@
+# This action periodically rebases branches onto upstream nixpkgs.
+
+name: "Periodic Rebases (24h)"
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # Rebase every 24 hours
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  periodic-rebase:
+    if: github.repository_owner == 'janvhs' || github.event_name == 'workflow_dispatch'
+    strategy:
+      # don't fail fast, so that all targets are tried
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        targets:
+          - target: jans-unstable
+            upstream: https://github.com/NixOS/nixpkgs.git
+    uses: $/.github/workflows/periodic-rebase.yml
+    with:
+      target: ${{ matrix.targets.target }}
+      upstream: ${{ matrix.targets.upstream }}
+    name: ${{ matrix.targets.target }}
+    secrets:
+      CI_APP_PRIVATE_KEY: ${{ secrets.CI_APP_PRIVATE_KEY }}
