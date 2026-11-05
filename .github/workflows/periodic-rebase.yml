@@ -64,6 +64,7 @@ jobs:
 
       - name: Rebase onto upstream nixpkgs
         env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           INPUTS_REVISION: ${{ inputs.revision }}
           INPUTS_TARGET: ${{ inputs.target }}
           INPUTS_UPSTREAM_URL: ${{ inputs.upstream }}
