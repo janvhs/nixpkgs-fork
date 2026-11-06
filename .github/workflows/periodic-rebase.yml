@@ -15,6 +15,9 @@ on:
         description: Target branch to rebase onto.
         required: true
         type: string
+    secrets:
+      CI_APP_PRIVATE_KEY:
+        required: true
 
 permissions: {}
 
@@ -24,28 +27,35 @@ defaults:
 
 jobs:
   rebase:
-    permissions:
-      contents: write
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
     steps:
-      - name: Get GitHub Actions User ID
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app-token
+        with:
+          client-id: ${{ vars.CI_CLIENT_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Get GitHub App User ID
         id: get-user-id
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: echo "user-id=$(gh api "/users/github-actions[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: echo "user-id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
 
-      - name: Set Git Committer ID
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "${USER_ID}+github-actions[bot]@users.noreply.github.com"
+      - run: |
+          git config --global user.name "${APP_SLUG}[bot]"
+          git config --global user.email "${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
           gh auth setup-git
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
           USER_ID: ${{ steps.get-user-id.outputs.user-id }}
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          token: ${{ steps.app-token.outputs.token }}
           ref: ${{ inputs.target }}
           fetch-depth: 0
           filter: blob:none
@@ -54,7 +64,7 @@ jobs:
 
       - name: Rebase onto upstream nixpkgs
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           INPUTS_REVISION: ${{ inputs.revision }}
           INPUTS_TARGET: ${{ inputs.target }}
           INPUTS_UPSTREAM_URL: ${{ inputs.upstream }}
