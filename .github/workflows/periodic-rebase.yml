@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       revision:
-        description: Git revision to rebase the target branch on, defaults to https://channels.nixos.org/nixpkgs-unstable/git-revision .
+        description: Git revision or channel URL to rebase the target branch on; defaults to https://channels.nixos.org/nixpkgs-unstable/git-revision
         required: false
         type: string
       upstream:
@@ -63,16 +63,17 @@ jobs:
           set -ue
           set -o pipefail
 
-          if [ -z "${INPUTS_REVISION}" ]; then
-            printf 'Getting channel revision "%s"\n' "${CHANNEL_REVISION_URL}"
-            INPUTS_REVISION="$(curl -sSfL "${CHANNEL_REVISION_URL}" | tr -d '[:space:]')"
-          elif [[ "${INPUTS_REVISION}" =~ ^https?:// ]]; then
+          TARGET_REVISION="${INPUTS_REVISION:-}"
+
+          INPUTS_REVISION="${INPUTS_REVISION:-"${CHANNEL_REVISION_URL}"}"
+
+          if [[ "${INPUTS_REVISION}" =~ ^https?:// ]]; then
             printf 'Getting channel revision from "%s"\n' "${INPUTS_REVISION}"
-            INPUTS_REVISION="$(curl -sSfL "${INPUTS_REVISION}" | tr -d '[:space:]')"
+            TARGET_REVISION="$(curl -sSfL "${INPUTS_REVISION}" | tr -d '[:space:]')"
           fi
 
-          if [[ ! "${INPUTS_REVISION}" =~ ^[0-9a-f]{40}$ ]]; then
-            printf '::error::Channel revision is not a valid commit SHA: "%s"\n' "${INPUTS_REVISION}"
+          if [[ ! "${TARGET_REVISION}" =~ ^[0-9a-f]{40}$ ]]; then
+            printf '::error::Channel revision is not a valid commit SHA: "%s"\n' "${TARGET_REVISION}"
             exit 1
           fi
 
@@ -88,17 +89,17 @@ jobs:
           git config remote.upstream.promisor true
           git config remote.upstream.partialclonefilter blob:none
 
-          printf 'Fetching revision "%s" from upstream\n' "${INPUTS_REVISION}"
-          git fetch --no-tags --filter=blob:none upstream "${INPUTS_REVISION}"
+          printf 'Fetching revision "%s" from upstream\n' "${TARGET_REVISION}"
+          git fetch --no-tags --filter=blob:none upstream "${TARGET_REVISION}"
 
-          if git merge-base --is-ancestor "${INPUTS_REVISION}" HEAD; then
-            printf 'The branch "%s" already contains "%s" in its history. Not rebasing\n' "${INPUTS_TARGET}" "${INPUTS_REVISION}"
+          if git merge-base --is-ancestor "${TARGET_REVISION}" HEAD; then
+            printf 'The branch "%s" already contains "%s" in its history. Not rebasing\n' "${INPUTS_TARGET}" "${TARGET_REVISION}"
             exit 0
           fi
 
-          printf 'Rebasing branch "%s" onto revision "%s"\n' "${INPUTS_TARGET}" "${INPUTS_REVISION}"
-          if ! git rebase "${INPUTS_REVISION}"; then
-            printf '::error::Rebase onto "%s" failed\n' "${INPUTS_REVISION}"
+          printf 'Rebasing branch "%s" onto revision "%s"\n' "${INPUTS_TARGET}" "${TARGET_REVISION}"
+          if ! git rebase "${TARGET_REVISION}"; then
+            printf '::error::Rebase onto "%s" failed\n' "${TARGET_REVISION}"
             git rebase --abort || true
             exit 1
           fi
