@@ -18,6 +18,8 @@ defaults:
 jobs:
   periodic-rebase:
     if: github.repository_owner == 'janvhs' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
     strategy:
       # don't fail fast, so that all targets are tried
       fail-fast: false
@@ -31,5 +33,3 @@ jobs:
       target: ${{ matrix.targets.target }}
       upstream: ${{ matrix.targets.upstream }}
     name: ${{ matrix.targets.target }}
-    secrets:
-      CI_APP_PRIVATE_KEY: ${{ secrets.CI_APP_PRIVATE_KEY }}
