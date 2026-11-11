@@ -59,7 +59,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ inputs.target }}
           fetch-depth: 0
-          filter: blob:none
+          filter: tree:0
           # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
           persist-credentials: false
 
