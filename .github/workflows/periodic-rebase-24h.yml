@@ -24,6 +24,7 @@ jobs:
     with:
       exclude: |
         fix-gnome-initial-setup
+        master
       upstream: https://github.com/NixOS/nixpkgs.git
 
   periodic-rebase:
