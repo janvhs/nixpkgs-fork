@@ -1,0 +1,106 @@
+name: "Rebase Branch Collection"
+
+on:
+  workflow_call:
+    inputs:
+      branches:
+        description: Newline separated list of branches to list as potential rebase target; defaults to all branches of this repository.
+        required: false
+        type: string
+      exclude:
+        description: Newline separated list of branches which should never be rebased.
+        required: false
+        type: string
+      upstream:
+        description: Upstream nixpkgs repository.
+        required: true
+        type: string
+    outputs:
+      targets:
+        description: JSON array of "{ target, upstream, revision }" objects, that is supposed to be used as a job matrix.
+        value: ${{ jobs.collect-branches.outputs.targets }}
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  collect-branches:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      targets: ${{ steps.targets.outputs.targets }}
+    steps:
+      - name: Collect Branches To Rebase
+        id: targets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUTS_BRANCHES: ${{ inputs.branches }}
+          INPUTS_EXCLUDE: ${{ inputs.exclude }}
+          INPUTS_UPSTREAM_URL: ${{ inputs.upstream }}
+        run: |
+          set -ue
+          set -o pipefail
+
+          declare -A EXCLUDED_BRANCHES=()
+          while read -r branch; do
+            [[ -n "${branch}" ]] || continue
+            EXCLUDED_BRANCHES["${branch}"]=1
+          done <<< "${INPUTS_EXCLUDE:-}"
+
+          declare -A SELECTED_BRANCHES=()
+          while read -r branch; do
+            [[ -n "${branch}" ]] || continue
+            SELECTED_BRANCHES["${branch}"]=1
+          done <<< "${INPUTS_BRANCHES:-}"
+
+          printf 'Listing branches of "%s"\n' "${INPUTS_UPSTREAM_URL}"
+          UPSTREAM_REFS_RAW="$(git ls-remote --heads "${INPUTS_UPSTREAM_URL}")"
+          mapfile -t UPSTREAM_REFS <<< "${UPSTREAM_REFS_RAW}"
+
+          declare -A UPSTREAM_REVISIONS=()
+          for upstream_ref in "${UPSTREAM_REFS[@]}"; do
+            [[ -n "${upstream_ref}" ]] || continue
+            read -r revision ref <<< "${upstream_ref}"
+            UPSTREAM_REVISIONS["${ref#refs/heads/}"]="${revision}"
+          done
+
+          REPOSITORY_BRANCHES_RAW="$(gh api --paginate "/repos/${GITHUB_REPOSITORY}/branches" --jq '.[].name' | sort)"
+          mapfile -t REPOSITORY_BRANCHES <<< "${REPOSITORY_BRANCHES_RAW}"
+
+          TARGETS='[]'
+          for branch in "${REPOSITORY_BRANCHES[@]}"; do
+            [[ -n "${branch}" ]] || continue
+
+            # If only some branches should be rebased and that branch is not selected, it is skipped.
+            if [[ "${#SELECTED_BRANCHES[@]}" -gt 0 ]] && [[ -z "${SELECTED_BRANCHES["${branch}"]:-}" ]]; then
+              printf 'Branch "%s" is not in the selected branches, skipping\n' "${branch}"
+              continue
+            fi
+
+            if [[ -n "${EXCLUDED_BRANCHES["${branch}"]:-}" ]]; then
+              printf 'Branch "%s" is excluded, skipping\n' "${branch}"
+              continue
+            fi
+
+            revision="${UPSTREAM_REVISIONS["${branch}"]:-}"
+            if [[ -z "${revision}" ]]; then
+              printf 'Branch "%s" does not exist upstream, skipping\n' "${branch}"
+              continue
+            fi
+
+            printf 'Collected branch "%s" to be rebased onto "%s"\n' "${branch}" "${revision}"
+            TARGETS="$(
+              jq -c \
+                --arg target "${branch}" \
+                --arg upstream "${INPUTS_UPSTREAM_URL}" \
+                --arg revision "${revision}" \
+                '. + [{ $target, $upstream, $revision }]' <<< "${TARGETS}"
+            )"
+          done
+
+          printf 'targets=%s\n' "${TARGETS}" >> "${GITHUB_OUTPUT}"
