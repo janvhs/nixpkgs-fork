@@ -16,20 +16,30 @@ defaults:
     shell: bash
 
 jobs:
-  periodic-rebase:
+  collect-branches:
     if: github.repository_owner == 'janvhs' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+    uses: $/.github/workflows/periodic-rebase-collect-branches.yml
+    with:
+      exclude: |
+        fix-gnome-initial-setup
+      upstream: https://github.com/NixOS/nixpkgs.git
+
+  periodic-rebase:
+    needs: collect-branches
+    if: needs.collect-branches.outputs.targets != '[]'
     strategy:
       # don't fail fast, so that all targets are tried
       fail-fast: false
       max-parallel: 1
       matrix:
-        targets:
-          - target: jans-unstable
-            upstream: https://github.com/NixOS/nixpkgs.git
+        targets: ${{ fromJSON(needs.collect-branches.outputs.targets) }}
     uses: $/.github/workflows/periodic-rebase.yml
     with:
       target: ${{ matrix.targets.target }}
       upstream: ${{ matrix.targets.upstream }}
+      revision: ${{ matrix.targets.revision }}
     name: ${{ matrix.targets.target }}
     secrets:
       CI_APP_PRIVATE_KEY: ${{ secrets.CI_APP_PRIVATE_KEY }}
