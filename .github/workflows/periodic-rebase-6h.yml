@@ -24,11 +24,11 @@ jobs:
     with:
       branches: |
         nixos-unstable
-        nixos-26.05
-        nixpkgs-26.05-darwin
-        nixpkgs-unstable
-        nixos-26.05-small
         nixos-unstable-small
+        nixpkgs-unstable
+        nixos-26.05
+        nixos-26.05-small
+        nixpkgs-26.05-darwin
       exclude: |
         fix-gnome-initial-setup
       upstream: https://github.com/NixOS/nixpkgs.git
