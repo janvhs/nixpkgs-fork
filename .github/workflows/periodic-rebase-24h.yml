@@ -40,6 +40,6 @@ jobs:
       target: ${{ matrix.targets.target }}
       upstream: ${{ matrix.targets.upstream }}
       revision: ${{ matrix.targets.revision }}
-    name: ${{ format('Rebasing "{0}" → "{1}"', matrix.targets.target, matrix.targets.revision) }}
+    name: ${{ format('{0} → {1}', matrix.targets.target, matrix.targets.short_revision) }}
     secrets:
       CI_APP_PRIVATE_KEY: ${{ secrets.CI_APP_PRIVATE_KEY }}

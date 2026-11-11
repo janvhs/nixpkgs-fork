@@ -17,7 +17,7 @@ on:
         type: string
     outputs:
       targets:
-        description: JSON array of "{ target, upstream, revision }" objects, that is supposed to be used as a job matrix.
+        description: JSON array of "{ target, upstream, revision, short_revision }" objects, that is supposed to be used as a job matrix.
         value: ${{ jobs.collect-branches.outputs.targets }}
 
 permissions: {}
@@ -99,7 +99,8 @@ jobs:
                 --arg target "${branch}" \
                 --arg upstream "${INPUTS_UPSTREAM_URL}" \
                 --arg revision "${revision}" \
-                '. + [{ $target, $upstream, $revision }]' <<< "${TARGETS}"
+                --arg short_revision "${revision:0:7}" \
+                '. + [{ $target, $upstream, $revision, $short_revision }]' <<< "${TARGETS}"
             )"
           done
 
