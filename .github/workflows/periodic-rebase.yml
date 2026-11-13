@@ -58,10 +58,15 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ inputs.target }}
-          fetch-depth: 0
+          fetch-depth: 1
           filter: tree:0
           # Make sure the value of GITHUB_TOKEN will not be persisted in repo's config
           persist-credentials: false
+
+      - name: Deepen the history
+        run: git fetch --filter=blob:none --shallow-since="$(date -d '1 month ago' '+%Y-%m-%d')" origin "${{ inputs.target }}"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Rebase onto upstream nixpkgs
         env:
