@@ -17,7 +17,7 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "mdcat";
-  version = "2.19.0";
+  version = "2.20.2";
 
   __structuredAttrs = true;
 
@@ -25,7 +25,7 @@ rustPlatform.buildRustPackage rec {
     owner = "BIRSAx2";
     repo = "mdcat";
     tag = "mdcat-${version}";
-    hash = "sha256-DJa6NPO8P5AjtVh7AuEZSPFN5pGuis3SIZI7rX00Eik=";
+    hash = "sha256-AVwPQeC2RYzLEf26xlr1RoNN72/JGIx/9zFaozd8+qs=";
   };
 
   nativeBuildInputs = [
@@ -40,7 +40,7 @@ rustPlatform.buildRustPackage rec {
     openssl
   ];
 
-  cargoHash = "sha256-QU8TNWPN29aFGvwd8DXAfdZPub9aczXBRQ+vUcIBGBM=";
+  cargoHash = "sha256-03V+KoN0kCsB3PyvsSxZwNWT8r+7ncFiNnhJ0H/R2tE=";
 
   nativeCheckInputs = [
     # mdpick test pipes through `less -r`

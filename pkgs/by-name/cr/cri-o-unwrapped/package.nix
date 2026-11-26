@@ -17,7 +17,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "cri-o";
-  version = "1.37.2";
+  version = "1.37.4";
 
   __structuredAttrs = true;
 
@@ -25,7 +25,7 @@ buildGoModule (finalAttrs: {
     owner = "cri-o";
     repo = "cri-o";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-d9Gr1ENmT9KG19vvZE9MXLGcMsRpKQRjHrY+liuLVJs=";
+    hash = "sha256-vDPBVt4ToI4YEiHqSTjq1NFR6e9oz9tyi+axKmTG1Ow=";
   };
   vendorHash = null;
 

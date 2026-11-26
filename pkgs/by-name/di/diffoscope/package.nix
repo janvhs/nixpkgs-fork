@@ -23,6 +23,7 @@
   e2fsprogs,
   enableBloat ? true,
   enjarify,
+  fetchpatch,
   fetchurl,
   ffmpeg,
   file,
@@ -112,12 +113,12 @@ in
 # Note: when upgrading this package, please run the list-missing-tools.sh script as described below!
 python.pkgs.buildPythonApplication rec {
   pname = "diffoscope";
-  version = "338";
+  version = "339";
   pyproject = true;
 
   src = fetchurl {
     url = "https://diffoscope.org/archive/diffoscope-${version}.tar.bz2";
-    hash = "sha256-w+STkyrfHfZP5Dr6PdQmucCXzqQV1Fusx8SGHmVPGbk=";
+    hash = "sha256-57jsc5s2kP/nfy73t+GxTrZ6ZI0OxwXPRWiQncysfjI=";
   };
 
   outputs = [
@@ -127,6 +128,11 @@ python.pkgs.buildPythonApplication rec {
 
   patches = [
     ./ignore_links.patch
+    (fetchpatch {
+      name = "Handle-GHC-snapshot-versions-correctly.patch";
+      url = "https://salsa.debian.org/reproducible-builds/diffoscope/-/commit/33826eb6d0cbc4bec0b6aa53b1d2f041fb54a51f.patch";
+      hash = "sha256-lqZLUq/U6/5qaRT1tkHS21qZ5m2Zv7waDZY9fwsMV1A=";
+    })
   ];
 
   postPatch = ''
@@ -328,6 +334,8 @@ python.pkgs.buildPythonApplication rec {
     "tests/comparators/test_macho.py"
     # OSError: AF_UNIX path too long
     "tests/comparators/test_sockets.py"
+    # Attempts a recursive call to pytestCheckHook
+    "tests/comparators/test_rpm.py"
   ];
 
   passthru = {

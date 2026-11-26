@@ -1,8 +1,10 @@
 {
+  stdenv,
   buildDunePackage,
   mosaic,
-  windtrap,
   ppx_windtrap,
+  thumper,
+  windtrap,
 }:
 
 buildDunePackage {
@@ -12,11 +14,16 @@ buildDunePackage {
   minimalOCamlVersion = "5.4";
 
   checkInputs = [
-    windtrap
     ppx_windtrap
+    thumper
+    windtrap
   ];
 
-  doCheck = true;
+  # The job-control tests inspect a running process with ps(1) on platforms
+  # without /proc. In the Darwin build sandbox ps(1) is not on PATH, and
+  # macOS refuses its `time` field without an entitlement, so those tests
+  # cannot pass there.
+  doCheck = !stdenv.hostPlatform.isDarwin;
 
   meta = mosaic.meta // {
     description = "Fast, modern terminal toolkit for OCaml";

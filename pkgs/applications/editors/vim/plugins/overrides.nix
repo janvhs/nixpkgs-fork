@@ -3270,6 +3270,7 @@ assertNoAdditions {
       "nvchad.blink.config"
       # Circular dependency with base46
       "nvchad.utils"
+      "nvchad.themes.api"
     ];
   };
 
@@ -4344,12 +4345,6 @@ assertNoAdditions {
       ];
     }
   );
-
-  srcery-vim = super.srcery-vim.overrideAttrs (old: {
-    meta = old.meta // {
-      license = lib.licenses.mit;
-    };
-  });
 
   starrynight = super.starrynight.overrideAttrs (old: {
     meta = old.meta // {

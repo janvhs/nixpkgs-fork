@@ -4,25 +4,26 @@
   fetchFromGitHub,
   dotnetCorePackages,
   testers,
+  nix-update-script,
 }:
 
 buildDotnetModule (finalAttrs: {
   pname = "seq-cli";
-  version = "2025.2.02447";
+  version = "2026.2.02674";
 
   src = fetchFromGitHub {
     owner = "datalust";
     repo = "seqcli";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-ghGd7divD+vLb8+4Z6fsQePxgQNEHME6KLPEo+EFnQI=";
+    hash = "sha256-WTXC4+Fuv8gxgkq1zHWPwSeEzr762IeVbg0HgmsZqrA=";
   };
 
   projectFile = "src/SeqCli/SeqCli.csproj";
   nugetDeps = ./deps.json;
-  dotnetInstallFlags = "-f net9.0";
+  dotnetInstallFlags = "-f net10.0";
 
-  dotnet-sdk = dotnetCorePackages.sdk_9_0;
-  dotnet-runtime = dotnetCorePackages.runtime_9_0;
+  dotnet-sdk = dotnetCorePackages.sdk_10_0;
+  dotnet-runtime = dotnetCorePackages.aspnetcore_10_0;
 
   executables = [ "seqcli" ];
 
@@ -30,6 +31,8 @@ buildDotnetModule (finalAttrs: {
     package = finalAttrs.finalPackage;
     command = "seqcli version";
   };
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Seq command-line client. Administer, log, ingest, search, from any OS";

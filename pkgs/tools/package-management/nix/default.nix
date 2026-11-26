@@ -205,17 +205,33 @@ lib.makeExtensible (
 
       nix_2_35 = addTests "nix_2_35" self.nixComponents_2_35.nix-everything;
 
+      nixComponents_2_36 =
+        (nixDependencies.callPackage ./modular/packages.nix rec {
+          version = "2.36.0";
+          inherit teams;
+          otherSplices = generateSplicesForNixComponents "nixComponents_2_36";
+          src = removeFunctionalTests commonDisabledTests (fetchFromGitHub {
+            owner = "NixOS";
+            repo = "nix";
+            tag = version;
+            hash = "sha256-dAZ9r19Uly7v21BFV4oZvHo3cLCXIRlkDCzVhQJ+M+A=";
+          });
+        }).appendPatches
+          [ ];
+
+      nix_2_36 = addTests "nix_2_36" self.nixComponents_2_36.nix-everything;
+
       nixComponents_git =
         let
           src = fetchFromGitHub {
             owner = "NixOS";
             repo = "nix";
-            rev = "16fa212a96192479593620e9b928733aaf7a2a6d";
-            hash = "sha256-htJYfCUGYt+jqedG5ck2BrWAUW1MkSTcqL7mbSPZh4E=";
+            rev = "e7386085ec51667d4b1d2b130f3a07ca93f50edc";
+            hash = "sha256-uD5rnTrWA0BFQffenPCIQrlZAxAMM2l9vgzk8rrSDxc=";
           };
         in
         (nixDependencies.callPackage ./modular/packages.nix {
-          version = "2.36pre20261109_${lib.substring 0 8 src.rev}";
+          version = "2.37pre20261124_${lib.substring 0 8 src.rev}";
           inherit teams;
           otherSplices = generateSplicesForNixComponents "nixComponents_git";
           src = removeFunctionalTests commonDisabledTests src;
@@ -224,7 +240,7 @@ lib.makeExtensible (
 
       git = addTests "git" self.nixComponents_git.nix-everything;
 
-      latest = self.nix_2_35;
+      latest = self.nix_2_36;
 
       # Read ./README.md before bumping a major release
       stable = addFallbackPathsCheck self.nix_2_35;

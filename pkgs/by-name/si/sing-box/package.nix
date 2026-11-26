@@ -5,7 +5,7 @@
   coreutils,
   cronet-go,
   fetchFromGitHub,
-  go,
+  stdenv,
   installShellFiles,
   nixosTests,
   stdenvNoCC,
@@ -75,6 +75,7 @@ buildGoModule (finalAttrs: {
   // lib.optionalAttrs (withNaiveOutbound && withStaticCronet) {
     CGO_ENABLED = 1;
     CGO_LDFLAGS = "-fuse-ld=lld";
+    CGO_LDFLAGS_ALLOW = "-l:libcronet\\.a";
   };
 
   nativeBuildInputs = [
@@ -116,7 +117,7 @@ buildGoModule (finalAttrs: {
     install -Dm444 release/config/sing-box-split-dns.xml $out/share/dbus-1/system.d/sing-box-split-dns.conf
   ''
   + lib.optionalString (withNaiveOutbound && !withStaticCronet) ''
-    ln -s "${cronet-go}/lib/${go.GOOS}_${go.GOARCH}/libcronet.so" "$out/lib/"
+    ln -s "${cronet-go}/lib/${stdenv.hostPlatform.go.GOOS}_${stdenv.hostPlatform.go.GOARCH}/libcronet.so" "$out/lib/"
   '';
 
   passthru = {

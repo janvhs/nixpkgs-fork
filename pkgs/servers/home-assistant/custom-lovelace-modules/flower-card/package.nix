@@ -6,16 +6,16 @@
 
 buildNpmPackage (finalAttrs: {
   pname = "flower-card";
-  version = "2026.10.0";
+  version = "2026.11.4";
 
   src = fetchFromGitHub {
     owner = "olen";
     repo = "lovelace-flower-card";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-H+ux8OFf0ko6Kp5fRd/fY9O0P3X2E0ncumlZH5XMhTo=";
+    hash = "sha256-mIiV00hPzpxF0YaXtXTRI1bujB8+I/+a8dKQSl2VP5Y=";
   };
 
-  npmDepsHash = "sha256-TlUO6iXev2MnFLyR06OErnlhCNgYQT4cTh1I6N4vmmI=";
+  npmDepsHash = "sha256-tCoKpEg7Mo3G79q1WYYO9hZwLrtH2qxxJr+uEfixd2Q=";
 
   installPhase = ''
     runHook preInstall

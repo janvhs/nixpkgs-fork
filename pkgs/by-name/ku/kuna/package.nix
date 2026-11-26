@@ -11,7 +11,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "kuna";
-  version = "1.980";
+  version = "1.1000";
 
   __structuredAttrs = true;
 
@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "Noelo-Lab";
     repo = "kuna";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Tp0eYpNCVYIo4eHuPC068xAsOHKRRNMdWSjMUfA6u3s=";
+    hash = "sha256-AncN5mTFiT2P4xCHZRQS1oZfztkY+3inU7ytE66UFwI=";
   };
 
-  cargoHash = "sha256-YgszQlq5uhmKqbgqpvbX/ox2Jtm3GB8QND61DB/Tohs=";
+  cargoHash = "sha256-k7QqfRPOeNYs3V5MwiCZJoXMfRuFiAA2EpsXdLPMcKo=";
   cargoRoot = "decompiler";
   buildAndTestSubdir = finalAttrs.cargoRoot;
 
