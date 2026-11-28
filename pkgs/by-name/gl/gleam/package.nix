@@ -26,7 +26,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-L7M1/nGDiB4D+yX1cjQ7mqNQ7YuC1BctLXEvnNjPz7A=";
   };
 
-  cargoHash = "sha256-ZyxYe7O+XDcSuWGBACv3F8FNmdCfHwVUrwx34E1a5es=";
+  cargoPatches = [
+    # Upgrade the zip crate to at least version 9.1 due to several CVEs
+    ./fix-for-CVE-2026-115905.patch
+    # Upgrade the Cargo lock file, because of the Nix offline builds
+    ./fix-for-CVE-2026-115905-cargoDeps.patch
+  ];
+
+  cargoHash = "sha256-BPp86e7TAEZb8iEFmqewqDna3Xf3tcZooO9iTfQA9q0=";
 
   nativeBuildInputs = [
     pkg-config
